@@ -4,7 +4,7 @@
 # NATS
 ####################################################################################
 
-FROM nats:2.0.2-linux
+FROM debian:stretch
 WORKDIR /app/nats
 ADD . /app/nats
 EXPOSE 4222 8222 6222
@@ -69,8 +69,8 @@ CMD bash dockercmd.sh
 ####################################################################################
 ####################################################################################
 #OLD MANUAL PUSH:
-#sudo docker build -t api .
-#sudo docker run -p 9001:9001 api
+#sudo docker build -t nats .
+#sudo docker run -p 4222:4222 -p 8222:8222 -p 6222:6222 nats
 #aws ecr get-login
 #sudo docker login -u AWS -p xxxsdfsdfsdfsdf= -e none https://735245989296.dkr.ecr.eu-central-1.amazonaws.com
 #sudo docker images
