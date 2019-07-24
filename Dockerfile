@@ -5,8 +5,8 @@
 ####################################################################################
 
 FROM nats:2.0.2-linux
-WORKDIR /nats-server
-ADD . /nats-server
+WORKDIR /app/nats
+ADD . /app/nats
 EXPOSE 4222 8222 6222
 
 ####################################################################################
@@ -41,16 +41,15 @@ RUN apt-get update && apt-get upgrade -y && apt-get install -y \
 #RUN pip install awscli --upgrade
 
 # build nodejs app in production mode
-RUN npm install --production
+#RUN npm install --production
 
 ####################################################################################
 
 # copy files to other locations
-COPY .setup/awscacert.pem /app
-COPY .setup/supervisor.conf /etc/supervisor.conf
+COPY supervisor.conf /etc/supervisor.conf
 #COPY .setup/nginx.bbs.conf /etc/nginx/conf.d/nginx.bbs.conf
 #COPY .setup/nginx.conf /etc/nginx/nginx.conf
-COPY .setup/app.supervisor.conf /etc/supervisor/conf.d/app.supervisor.conf
+COPY nats.supervisor.conf /etc/supervisor/conf.d/nats.supervisor.conf
 #COPY .setup/nginx.supervisor.conf /etc/supervisor/conf.d/nginx.supervisor.conf
 
 # disable nginx default website
@@ -58,13 +57,14 @@ COPY .setup/app.supervisor.conf /etc/supervisor/conf.d/app.supervisor.conf
 # && rm /etc/nginx/sites-enabled/default
 
 # prepare nginx cache
-RUN mkdir /tmp/nginx_cache_ms \
- && chown www-data:www-data /tmp/nginx_cache_ms
+#RUN mkdir /tmp/nginx_cache_ms \
+# && chown www-data:www-data /tmp/nginx_cache_ms
 
 ####################################################################################
 
 # startup command
 CMD bash dockercmd.sh
+#CMD ["-config ./seed.conf -D"]
 
 ####################################################################################
 ####################################################################################
