@@ -4,71 +4,63 @@
 # NATS
 ####################################################################################
 
-FROM debian:stretch
-WORKDIR /app/nats
-ADD . /app/nats
-EXPOSE 4222 8222 6222
+FROM debian:latest
+
+# update packages and install required ones
+RUN apt update && apt upgrade -y && apt install -y \
+#  golang \
+#  git \
+#  libssl-dev \
+#  python-pip \
+  jq \
+  && apt autoclean -y \
+  && apt autoremove -y
+
+# apt cleanup
+# RUN apt autoclean -y && apt autoremove -y
+
+# build app instead of just publishing
+# RUN go get github.com/dioptre/tracker
+# RUN go install github.com/dioptre/tracker
+# RUN go build
+
 
 ####################################################################################
 
-# ulimit incrase (set in docker templats/aws ecs-task-definition too!!)
+# ulimit increase (set in docker templats/aws ecs-task-definition too!!)
 RUN bash -c 'echo "root hard nofile 16384" >> /etc/security/limits.conf' \
  && bash -c 'echo "root soft nofile 16384" >> /etc/security/limits.conf' \
  && bash -c 'echo "* hard nofile 16384" >> /etc/security/limits.conf' \
  && bash -c 'echo "* soft nofile 16384" >> /etc/security/limits.conf'
 
-# ip/tcp tweaks
+# ip/tcp tweaks, disable ipv6
 RUN bash -c 'echo "net.core.somaxconn = 8192" >> /etc/sysctl.conf' \
  && bash -c 'echo "net.ipv4.tcp_max_tw_buckets = 1440000" >> /etc/sysctl.conf' \
+ && bash -c 'echo "net.ipv6.conf.all.disable_ipv6 = 1" >> /etc/sysctl.conf' \ 
  && bash -c 'echo "net.ipv4.ip_local_port_range = 5000 65000" >> /etc/sysctl.conf' \
  && bash -c 'echo "net.ipv4.tcp_fin_timeout = 15" >> /etc/sysctl.conf' \
  && bash -c 'echo "net.ipv4.tcp_window_scaling = 1" >> /etc/sysctl.conf' \
  && bash -c 'echo "net.ipv4.tcp_syncookies = 1" >> /etc/sysctl.conf' \
  && bash -c 'echo "net.ipv4.tcp_max_syn_backlog = 8192" >> /etc/sysctl.conf' \
- && bash -c 'echo "net.ipv4.tcp_syn_retries = 2" >> /etc/sysctl.conf' \
  && bash -c 'echo "fs.file-max=65536" >> /etc/sysctl.conf'
 
 ####################################################################################
 
-# update packages and install required ones
-RUN apt-get update && apt-get upgrade -y && apt-get install -y \
-  supervisor 
-#  nginx \
-# python-pip \
-#  jq
 
-# install latest AWS CLI
-#RUN pip install awscli --upgrade
+WORKDIR /app/nats
+ADD . /app/nats
+EXPOSE 4222 8222 6222
 
-# build nodejs app in production mode
-#RUN npm install --production
-
-####################################################################################
-
-# copy files to other locations
-COPY supervisor.conf /etc/supervisor.conf
-#COPY .setup/nginx.bbs.conf /etc/nginx/conf.d/nginx.bbs.conf
-#COPY .setup/nginx.conf /etc/nginx/nginx.conf
-COPY nats.supervisor.conf /etc/supervisor/conf.d/nats.supervisor.conf
-#COPY .setup/nginx.supervisor.conf /etc/supervisor/conf.d/nginx.supervisor.conf
-
-# disable nginx default website
-#RUN rm /etc/nginx/sites-available/default \
-# && rm /etc/nginx/sites-enabled/default
-
-# prepare nginx cache
-#RUN mkdir /tmp/nginx_cache_ms \
-# && chown www-data:www-data /tmp/nginx_cache_ms
 
 ####################################################################################
 
 # startup command
-CMD bash dockercmd.sh
-#CMD ["-config ./seed.conf -D"]
+CMD ["/usr/bin/nice", "-n 5", "/app/nats/gnatsd -c seed.conf"]
+# Can also clean logs > /dev/null 2>&1
 
 ####################################################################################
 ####################################################################################
-#OLD MANUAL PUSH:
+#Deploy notes:
 #sudo docker build -t nats .
 #sudo docker run -p 4222:4222 -p 8222:8222 -p 6222:6222 nats
 #aws ecr get-login
