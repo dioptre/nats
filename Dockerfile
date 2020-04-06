@@ -5,6 +5,7 @@
 ####################################################################################
 
 FROM debian:latest
+EXPOSE 4222 8222 6222
 
 # update packages and install required ones
 RUN apt update && apt upgrade -y && apt install -y \
@@ -12,7 +13,7 @@ RUN apt update && apt upgrade -y && apt install -y \
 #  git \
 #  libssl-dev \
 #  python-pip \
-  jq \
+  dnsutils \
   && apt autoclean -y \
   && apt autoremove -y
 
@@ -49,13 +50,12 @@ RUN bash -c 'echo "net.core.somaxconn = 8192" >> /etc/sysctl.conf' \
 
 WORKDIR /app/nats
 ADD . /app/nats
-EXPOSE 4222 8222 6222
 
 
 ####################################################################################
 
 # startup command
-CMD ["/usr/bin/nice", "-n 5", "/app/nats/gnatsd -c seed.conf"]
+CMD ["/usr/bin/nice", "-n 5", "/app/nats/nats-server -c seed.conf"]
 # Can also clean logs > /dev/null 2>&1
 
 ####################################################################################
