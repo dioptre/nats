@@ -69,3 +69,4 @@ CMD ["/usr/bin/nice", "-n 5", "/app/nats/nats-server -c seed.conf"]
 #sudo docker tag 9b8f5081d3c5 735245989296.dkr.ecr.eu-central-1.amazonaws.com/gls
 #sudo docker push 735245989296.dkr.ecr.eu-central-1.amazonaws.com/gls
 ## sudo docker rmi 9b8f5081d3c5 --force
+#dig +short tr.sfpl.io | grep -v "116.202.183.82" | awk '{system("echo nats-route://"$1":6222")}' | xargs | sed -e 's/ /,/g' | sed "s;/;\\\\/;g" | sed -r "s/nats-route:\/\/nats-seed1:6222/$(awk '{print $1}')/g" seed.conf > temp.conf
