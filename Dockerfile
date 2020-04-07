@@ -55,7 +55,7 @@ ADD . /app/nats
 ####################################################################################
 
 # startup command
-CMD ["/usr/bin/nice", "-n 5", "/app/nats/nats-server -c seed.conf"]
+CMD ["/usr/bin/nice", "-n", "5", "/app/nats/nats-server", "-c", "seed.conf"]
 # Can also clean logs > /dev/null 2>&1
 
 ####################################################################################
