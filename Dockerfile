@@ -50,7 +50,7 @@ RUN bash -c 'echo "net.core.somaxconn = 8192" >> /etc/sysctl.conf' \
 
 WORKDIR /app/nats
 ADD . /app/nats
-RUN bash -c 'rm /app/nats/temp.conf'
+RUN bash -c 'rm /app/nats/temp.conf || exit 0'
 
 ####################################################################################
 
